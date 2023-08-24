@@ -24,7 +24,7 @@ const routes = [
     },
     {
         path: '/view/:id',  
-        name: 'single-student',
+        name: 'view-student',
         component: View
     },
     {
