@@ -1,21 +1,43 @@
 <script setup>
-import {
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  UserPlusIcon
-} from "@heroicons/vue/24/solid"
+import { EyeIcon, PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/vue/24/solid"
+import { onMounted, watch, ref } from "vue";
+import useStudent from "../../composables/studentApi";
+
+const {
+  studentData,
+  error,
+  statusCode,
+  delError,
+  getAllStudent,
+  destroyStudent,
+} = useStudent();
+
+onMounted(getAllStudent);
 
 const deleteStudent = async (id) => {
   if (!window.confirm("Are you sure ?")) {
     return;
   }
-  console.log("Deleted");
+  await destroyStudent(id);
+  await getAllStudent();
 };
+
+const showAlert = ref(false)
+
+watch(statusCode, (newVal, oldVal) => {
+  if (newVal === 200) {
+    showAlert.value = true;
+    setTimeout(() => {
+      showAlert.value = false;
+      statusCode.value = oldVal;
+    }, 4000);
+  }
+});
 
 </script>
 
 <template>
+  
   <div 
     class="w-full 
     max-w-screen-xl 
@@ -27,8 +49,7 @@ const deleteStudent = async (id) => {
     p-4 
     my-4"
   >
-    <h1 class="text-3xl font-bold underline my-4"
-    >
+    <h1 class="text-3xl font-bold underline my-4">
       Students
     </h1>
 
@@ -60,7 +81,30 @@ const deleteStudent = async (id) => {
     overflow-x-auto 
     mx-auto"
   >
-    <table 
+    <div
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium"
+      role="alert"
+      v-if="delError"
+    >
+      Unable to delete student: {{ delError.message }}
+    </div>
+    <div
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium"
+      role="alert"
+      v-if="showAlert"
+    >
+      Student deleted successfully
+    </div>
+
+    <div
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium"
+      role="alert"
+      v-if="error"
+    >
+      Oops! Error encountered: {{ error.message }}
+    </div>
+
+    <table v-if="studentData && studentData.length"
       class="w-full 
       text-sm 
       text-center 
@@ -91,36 +135,26 @@ const deleteStudent = async (id) => {
         </tr>
       </thead>
       <tbody>
-        <tr 
+        <tr v-for="({ id, name, email }, i) in studentData" :key="id"
           class="bg-white 
           border-b 
           dark:bg-gray-800 
           dark:border-gray-700"
-          >
-            <th 
-              scope="row" 
-              class="px-6 
-              py-4 
-              font-medium 
-              text-gray-900 
-              whitespace-nowrap 
-              dark:text-white"
-            >
-              1
-            </th>
-            <td class="px-6 py-4">Mario Sanna</td>
-            <td class="px-6 py-4">mariosanna@test.it</td>
-            <td class="px-6 py-4">
-              <router-link :to="{name: 'view-student', params: {id:1}}">
-                <EyeIcon class="text-blue-500 h6 w-6 inline mx-2" />
-              </router-link>
-              <router-link :to="{name: 'edit-student', params: {id:1}}">
-                <PencilIcon class="text-emerald-500 h6 w-6 inline mx-2" />
-              </router-link>
-              <TrashIcon @click="deleteStudent(1)" class="text-red-500 h6 w-6 inline mx-2" />
-            </td>
-          </tr>
+        >
+          <td class="px-6 py-4">{{ ++i }}</td>
+          <td class="px-6 py-4">{{ name }}</td>
+          <td class="px-6 py-4">{{ email }}</td>
+          <td class="px-6 py-4">
+            <router-link v-if="id" :to="{name: 'view-student', params: {id: id}}">
+              <EyeIcon class="text-blue-500 h6 w-6 inline mx-2" />
+            </router-link>
+            <router-link v-if="id" :to="{name: 'edit-student', params: {id: id}}">
+              <PencilIcon class="text-emerald-500 h6 w-6 inline mx-2" />
+            </router-link>
+            <TrashIcon @click="deleteStudent(id)" class="text-red-500 h6 w-6 inline mx-2" />
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
-</template>
+</template> 

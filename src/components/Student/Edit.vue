@@ -1,13 +1,26 @@
 <script setup>
-import { reactive } from "vue";
-const studentData = {
-  id: "",
-  name: "",
-  email: ""
-};
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import useStudent from "../../composables/studentApi";
+
+const route = useRoute();
+const studentId = route.params.id
+const router = useRouter()
+
+const { studentData, error, getSingleStudent, updateStudent } = useStudent();
+
 const handleUpdateStudentForm = async () => {
-  console.log("Udpated", formData)
+  await updateStudent(studentId, studentData.value)
+  router.push({
+    name: 'view-student',
+    params: {id: studentId}
+  })
 }
+
+onMounted(() => {
+  getSingleStudent(studentId);
+});
+
 </script>
 
 <template>
@@ -30,9 +43,7 @@ const handleUpdateStudentForm = async () => {
           class="text-white 
           bg-green-700 
           hover:bg-green-800 
-          focus:ring-4 
           focus:outline-none 
-          focus:ring-green-300 
           font-medium 
           rounded-full 
           text-sm w-full 
@@ -41,14 +52,25 @@ const handleUpdateStudentForm = async () => {
           py-2.5 
           text-center 
           dark:bg-green-600 
-          dark:hover:bg-green-700 
-          dark:focus:ring-green-800"
+          dark:hover:bg-green-700"
         >
           Back to home
         </button>
       </router-link>
     </div>
-    <form @submit.prevent='handleUpdateStudentForm' class="w-1/2 mx-auto my-4">
+
+    <div
+      class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium"
+      role="alert"
+      v-if="error"
+    >
+      Oops! Error encountered: {{ error.message }}
+    </div>
+
+    <form v-if="studentData.id"
+      @submit.prevent='handleUpdateStudentForm' 
+      class="w-1/2 mx-auto my-4"
+    >
       <div class="relative z-0  mb-6 group">
         <label 
           for="id" 
@@ -208,9 +230,7 @@ const handleUpdateStudentForm = async () => {
         text-white
         bg-blue-700
         hover:bg-blue-800
-        focus:ring-4
         focus:outline-none
-        focus:ring-blue-300
         font-medium
         rounded-full
         text-sm
@@ -220,8 +240,7 @@ const handleUpdateStudentForm = async () => {
         py-2.5
         text-center
         dark:bg-blue-600
-        dark:hover:bg-blue-700
-        dark:focus:ring-blue-800"
+        dark:hover:bg-blue-700"
       >
         Save
       </button>

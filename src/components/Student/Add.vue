@@ -1,12 +1,24 @@
 <script setup>
 import { reactive } from "vue";
-const formData = {
+import { useRouter } from 'vue-router'
+import useStudent from "../../composables/studentApi";
+
+const { studentData, error, createStudent } = useStudent();
+const router = useRouter()
+
+const formData = reactive({
   name: "",
   email: ""
-};
+});
+
 const handleAddStudentForm = async () => {
-  console.log("Form Submitted", formData)
+  const newStudent = await createStudent(formData)
+  router.push({
+    name: 'view-student',
+    params: {id: studentData.value.id}
+  })
 }
+
 </script>
 
 <template>
@@ -23,7 +35,7 @@ const handleAddStudentForm = async () => {
         New student
       </h1>
       <router-link :to="{name: 'students'}">
-        <button 
+        <button
           type="submit" 
           class="w-full
           text-white 

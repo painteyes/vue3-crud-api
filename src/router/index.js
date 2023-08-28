@@ -5,12 +5,12 @@ import Add from "../components/Student/Add.vue"
 import View from "../components/Student/View.vue"
 import NotFound from "../views/NotFound.vue"
 
-
 const routes = [
     {
         path: '/',
         name: 'students',
-        component: List
+        component: List,
+
     },
     {
         path: '/add',
@@ -38,6 +38,5 @@ const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: routes
 })
-
 
 export default router
